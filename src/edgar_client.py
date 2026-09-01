@@ -26,8 +26,41 @@ def get_company_filings(cik: str) -> dict:
     return response.json()
 
 
+def filter_10k_10q(filings_data: dict) -> list[dict]:
+    """
+    Given the raw dict from get_company_filings, return a clean list of
+    just the 10-K and 10-Q filings, each as its own dict.
+    """
+    recent = filings_data["filings"]["recent"]
+    results = []
+
+    for i, form_type in enumerate(recent["form"]):
+        if form_type in ("10-K", "10-Q"):
+            accession = recent["accessionNumber"][i].replace("-", "")
+            primary_doc = recent["primaryDocument"][i]
+            cik = filings_data["cik"]
+
+            doc_url = (
+                f"https://www.sec.gov/Archives/edgar/data/"
+                f"{cik}/{accession}/{primary_doc}"
+            )
+
+            results.append({
+                "form": form_type,
+                "filing_date": recent["filingDate"][i],
+                "accession_number": recent["accessionNumber"][i],
+                "document_url": doc_url,
+            })
+
+    return results
+
+
 if __name__ == "__main__":
-    # Quick manual test: pull Apple's filings and print the company name
+    # Quick manual test: pull Apple's filings, filter to 10-K/10-Q, show the latest 3
     data = get_company_filings("0000320193")
     print(data["name"])
-    print("Most recent filing form:", data["filings"]["recent"]["form"][0])
+
+    filings = filter_10k_10q(data)
+    print(f"Found {len(filings)} 10-K/10-Q filings")
+    for f in filings[:3]:
+        print(f)
