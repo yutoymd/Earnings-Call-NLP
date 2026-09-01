@@ -43,10 +43,39 @@ def extract_text_from_html(html_path: str) -> str:
 
     return clean_text
 
+def extract_mdna_section(full_text: str) -> str:
+    """
+    Extract the MD&A (Management's Discussion and Analysis) section from
+    10-Q filing text. This is 'Item 2' in Part I of a 10-Q — note that
+    Part II also has its own unrelated 'Item 2', so we match on the full
+    section title, not just the item number, to avoid grabbing the wrong one.
+
+    SEC filings often use a "curly" apostrophe (’) instead of a straight
+    one ('), so we normalize both to match reliably.
+    """
+    normalized = full_text.replace("\u2019", "'")  # curly apostrophe -> straight
+
+    start_marker = "Management's Discussion and Analysis of Financial Condition and Results of Operations"
+    end_marker = "Item 3."
+
+    first_occurrence = normalized.find(start_marker)
+    start_index = normalized.find(start_marker, first_occurrence + 1)
+
+    if start_index == -1:
+        start_index = first_occurrence
+
+    end_index = normalized.find(end_marker, start_index)
+
+    if start_index == -1 or end_index == -1:
+        raise ValueError("Could not locate MD&A section boundaries in filing text")
+
+    return normalized[start_index:end_index].strip()
 
 if __name__ == "__main__":
     text = extract_text_from_html("data/raw/aapl_2026-07-31.htm")
+    print(f"Full filing: {len(text)} characters")
 
-    print(f"Extracted {len(text)} characters")
-    print("First 500 characters:")
-    print(text[:500])
+    mdna = extract_mdna_section(text)
+    print(f"MD&A section: {len(mdna)} characters")
+    print("First 500 characters of MD&A:")
+    print(mdna[:500])
