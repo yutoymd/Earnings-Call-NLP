@@ -9,7 +9,7 @@ reaction around the filing date — using proper event-study methodology
 Built as a learning project to practice the intersection of NLP, event-study
 econometrics, and quant backtesting discipline.
 
-## Pipeline
+## Current Pipeline
 
 1. src/edgar_client.py — fetches a company's filing history from SEC
    EDGAR and filters it down to 10-K/10-Q filings with dates and document URLs.
@@ -17,7 +17,7 @@ econometrics, and quant backtesting discipline.
 3. src/text_extractor.py — strips HTML tags and hidden Inline XBRL
    metadata to produce clean plain text from a raw filing.
 
-## Next
+## Future References
 
 - Extract the MD&A section (Item 2 in 10-Qs, Item 7 in 10-Ks) specifically,
   since that's where management's actual tone/language signal lives.
