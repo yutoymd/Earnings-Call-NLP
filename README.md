@@ -15,16 +15,19 @@ econometrics, and quant backtesting discipline.
    EDGAR and filters it down to 10-K/10-Q filings with dates and document URLs.
 2. src/filing_downloader.py — downloads and saves raw filing HTML locally.
 3. src/text_extractor.py — strips HTML tags and hidden Inline XBRL
-   metadata to produce clean plain text from a raw filing.
+   metadata, then isolates the MD&A section (Item 2) from a filing.
+4. src/sentiment_scorer.py — scores text using the Loughran-McDonald
+   financial sentiment dictionary (negative, positive, uncertainty,
+   litigious, modal, and constraining language).
+5. src/price_data.py — fetches historical daily stock prices via yfinance.
 
 ## Next
 
-- Extract the MD&A section (Item 2 in 10-Qs, Item 7 in 10-Ks) specifically,
-  since that's where management's actual tone/language signal lives.
-- Loughran-McDonald financial sentiment scoring.
-- Stock price data pipeline + CAPM-adjusted event study around filing dates.
-- Statistical testing of signal vs. abnormal returns, backtest, and honesty
-  checks (decay over time, transaction costs, failure modes).
+- CAPM-adjusted event study: estimate expected returns from a market
+  model, then compute abnormal returns around each filing date.
+- Statistical testing of signal vs. abnormal returns.
+- Backtest, with honesty checks (decay over time, transaction costs,
+  failure modes).
 
 ## Setup
 
