@@ -32,10 +32,39 @@ def load_ticker_to_cik_map() -> dict:
 
     return ticker_to_cik
 
+def load_company_list(txt_path: str, ticker_to_cik: dict) -> list[dict]:
+    """
+    Read a plain-text file of tickers (one per line) and resolve each to
+    its CIK using the provided ticker_to_cik mapping.
+
+    Returns a list of dicts like [{"ticker": "AAPL", "cik": "0000320193"}, ...].
+    Raises an error listing any tickers that couldn't be resolved, so bad
+    entries (typos, delistings, recent renames) are caught early rather
+    than failing partway through a long pipeline run later.
+    """
+    with open(txt_path, "r") as f:
+        tickers = [line.strip().upper() for line in f if line.strip()]
+
+    resolved = []
+    missing = []
+
+    for ticker in tickers:
+        cik = ticker_to_cik.get(ticker)
+        if cik is None:
+            missing.append(ticker)
+        else:
+            resolved.append({"ticker": ticker, "cik": cik})
+
+    if missing:
+        raise ValueError(f"Could not resolve CIK for tickers: {missing}")
+
+    return resolved
 
 if __name__ == "__main__":
     mapping = load_ticker_to_cik_map()
     print(f"Loaded {len(mapping)} ticker mappings")
 
-    for ticker in ["AAPL", "MSFT", "JPM", "XOM", "JNJ"]:
-        print(f"{ticker}: {mapping.get(ticker, 'NOT FOUND')}")
+    companies = load_company_list("config/companies.txt", mapping)
+    print(f"\nResolved {len(companies)} companies:")
+    for c in companies:
+        print(f"  {c['ticker']}: {c['cik']}")
